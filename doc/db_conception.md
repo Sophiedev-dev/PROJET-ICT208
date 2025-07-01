@@ -1,16 +1,18 @@
+```mermaid
 erDiagram
+
     NIVEAU {
         int id_niveau PK
         string nom_niveau
         string description
     }
-    
+
     CLASSE {
         int id_classe PK
         string nom_classe
         int id_niveau FK
     }
-    
+
     ELEVE {
         int id_eleve PK
         string nom
@@ -20,7 +22,7 @@ erDiagram
         string telephone
         int id_classe FK
     }
-    
+
     ENSEIGNANT {
         int id_enseignant PK
         string nom
@@ -29,14 +31,14 @@ erDiagram
         string telephone
         string specialite
     }
-    
+
     COURS {
         int id_cours PK
         string nom_cours
         int coefficient
         string description
     }
-    
+
     ADMINISTRATEUR {
         int id_admin PK
         string nom
@@ -45,7 +47,7 @@ erDiagram
         string login
         string mot_de_passe
     }
-    
+
     TRIMESTRE {
         int id_trimestre PK
         int numero_trimestre
@@ -53,7 +55,7 @@ erDiagram
         date date_fin
         int annee_scolaire
     }
-    
+
     ANONYMAT {
         int id_anonymat PK
         string code_anonymat
@@ -61,7 +63,7 @@ erDiagram
         int id_trimestre FK
         int id_cours FK
     }
-    
+
     NOTE {
         int id_note PK
         float note_controle_continu
@@ -70,28 +72,29 @@ erDiagram
         int id_cours FK
         int id_trimestre FK
     }
-    
+
     ENSEIGNER {
         int id_enseignant FK
         int id_cours FK
         int id_classe FK
     }
-    
+
     %% Relations
     NIVEAU ||--o{ CLASSE : "contient"
     CLASSE ||--o{ ELEVE : "regroupe"
-    
+
     %% Relation ternaire : Un enseignant enseigne un cours dans une classe
     ENSEIGNANT }o--o{ ENSEIGNER : "participe"
     COURS }o--o{ ENSEIGNER : "participe"
     CLASSE }o--o{ ENSEIGNER : "participe"
-    
+
     %% Relations pour anonymat
     ELEVE ||--o{ ANONYMAT : "possède"
     TRIMESTRE ||--o{ ANONYMAT : "concerne"
     COURS ||--o{ ANONYMAT : "pour"
-    
+
     %% Relations pour notes
     ELEVE ||--o{ NOTE : "obtient"
     COURS ||--o{ NOTE : "dans"
     TRIMESTRE ||--o{ NOTE : "au"
+```
