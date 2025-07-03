@@ -54,6 +54,9 @@ public class EnseignantService {
                     updateStmt.setInt(3, coursId);
                     updateStmt.setInt(4, trimestre);
                     updateStmt.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Erreur lors de la mise à jour de la note : " + e.getMessage());
                 }
             } else {
                 // La note n'existe pas, on fait un INSERT
@@ -65,7 +68,12 @@ public class EnseignantService {
                     insertStmt.setFloat(4, noteCC);
                     insertStmt.setFloat(5, noteCC); // moyenne provisoire
                     insertStmt.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Erreur lors de l'insertion de la note : " + e.getMessage());
                 }
+
+            
             }
         } catch (SQLException e) {
             e.printStackTrace();

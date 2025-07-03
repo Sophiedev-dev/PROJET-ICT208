@@ -61,6 +61,10 @@ public class PanelSaisieExamen extends JPanel {
     }
 
     private void enregistrerNotes() {
+         // Force la validation de la cellule en cours d'édition
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
+        }
         Cours cours = (Cours) coursCombo.getSelectedItem();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
         for (int i = 0; i < model.getRowCount(); i++) {
