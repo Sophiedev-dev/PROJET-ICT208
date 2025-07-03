@@ -50,14 +50,27 @@ public class PanelSaisieCC extends JPanel {
 
     private void chargerEleves() {
         model.setRowCount(0);
-        int classeId = (int) classeCombo.getSelectedItem();
+        Cours cours = (Cours) coursCombo.getSelectedItem();
+        int classeId = service.getClasseIdForCours(cours.getId());
+        int trimestre = trimestreCombo.getSelectedIndex() + 1;
+
         List<Eleve> eleves = service.getElevesByClasse(classeId);
         for (Eleve el : eleves) {
-            model.addRow(new Object[]{el.getId(), el.getNom(), ""});
+            // Récupérer la note CC existante pour cet élève, ce cours et ce trimestre
+            Float noteCC = service.getNoteCC(el.getId(), cours.getId(), trimestre); // À implémenter dans EnseignantService
+            model.addRow(new Object[]{
+                el.getId(),
+                el.getNom(),
+                noteCC != null ? noteCC : ""
+            });
         }
     }
 
     private void enregistrerNotes() {
+        // Force la validation de la cellule en cours d'édition
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
+        }
         Cours cours = (Cours) coursCombo.getSelectedItem();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -70,4 +83,5 @@ public class PanelSaisieCC extends JPanel {
         }
         JOptionPane.showMessageDialog(this, "Notes CC enregistrées.");
     }
+
 }

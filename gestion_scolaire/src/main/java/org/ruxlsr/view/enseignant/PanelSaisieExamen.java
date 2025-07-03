@@ -50,14 +50,26 @@ public class PanelSaisieExamen extends JPanel {
 
     private void chargerEleves() {
         model.setRowCount(0);
-        int classeId = (int) classeCombo.getSelectedItem();
+        Cours cours = (Cours) coursCombo.getSelectedItem();
+        int classeId = service.getClasseIdForCours(cours.getId());
+        int trimestre = trimestreCombo.getSelectedIndex() + 1;
+
         List<Eleve> eleves = service.getElevesByClasse(classeId);
         for (Eleve el : eleves) {
-            model.addRow(new Object[]{el.getIdAnonymat(), ""});
+            // Récupérer la note d'examen existante pour cet anonymat, ce cours et ce trimestre
+            Float noteExamen = service.getNoteExamen(el.getIdAnonymat(), cours.getId(), trimestre); // À implémenter dans EnseignantService
+            model.addRow(new Object[]{
+                el.getIdAnonymat(),
+                noteExamen != null ? noteExamen : ""
+            });
         }
     }
 
     private void enregistrerNotes() {
+         // Force la validation de la cellule en cours d'édition
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
+        }
         Cours cours = (Cours) coursCombo.getSelectedItem();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
         for (int i = 0; i < model.getRowCount(); i++) {

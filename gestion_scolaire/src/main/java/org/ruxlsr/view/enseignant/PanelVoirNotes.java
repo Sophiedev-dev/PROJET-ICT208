@@ -45,5 +45,6 @@ public class PanelVoirNotes extends JPanel {
         int coursId = ((Cours) coursCombo.getSelectedItem()).getId();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
         new EnseignantService().getNoteParclasseEtCours(model, classeId, coursId, trimestre);
+
     }
 }
