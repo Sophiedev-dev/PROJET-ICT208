@@ -19,7 +19,7 @@ public class PanelVoirNotes extends JPanel {
         JPanel top = new JPanel();
 
         classeCombo = new JComboBox<>(service.getClasseIdsByEnseignant(enseignantId).toArray(new Integer[0]));
-        coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[1]));
+        coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
         trimestreCombo = new JComboBox<>(new String[] { "1", "2", "3" });
         JButton afficher = new JButton("Afficher");
 
@@ -45,5 +45,6 @@ public class PanelVoirNotes extends JPanel {
         int coursId = ((Cours) coursCombo.getSelectedItem()).getId();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
         new EnseignantService().getNoteParclasseEtCours(model, classeId, coursId, trimestre);
+
     }
 }

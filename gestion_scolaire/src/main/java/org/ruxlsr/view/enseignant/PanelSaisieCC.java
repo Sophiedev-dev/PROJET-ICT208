@@ -48,9 +48,16 @@ public class PanelSaisieCC extends JPanel {
         model.setRowCount(0);
         Cours cours = (Cours) coursCombo.getSelectedItem();
         int classeId = service.getClasseIdForCours(cours.getId());
+        int trimestre = trimestreCombo.getSelectedIndex() + 1;
         List<Eleve> eleves = service.getElevesByClasse(classeId);
         for (Eleve el : eleves) {
-            model.addRow(new Object[]{el.getId(), el.getNom(), ""});
+            // Récupérer la note CC existante pour cet élève, ce cours et ce trimestre
+            Float noteCC = service.getNoteCC(el.getId(), cours.getId(), trimestre); // À implémenter dans EnseignantService
+            model.addRow(new Object[]{
+                el.getId(),
+                el.getNom(),
+                noteCC != null ? noteCC : ""
+            });
         }
     }
 

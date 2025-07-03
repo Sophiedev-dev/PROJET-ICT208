@@ -7,6 +7,7 @@ import org.ruxlsr.model.Eleve;
 import org.ruxlsr.utils.DatabaseConnection;
 
 import javax.swing.table.DefaultTableModel;
+import javax.swing.JOptionPane;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,70 +33,92 @@ public class EnseignantService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
         }
     }
 
     public void saisirNoteCC(int eleveId, int coursId, int trimestre, float noteCC) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String check = "SELECT id FROM notes WHERE eleve_id = ? AND cours_id = ? AND trimestre = ?";
-            PreparedStatement checkStmt = conn.prepareStatement(check);
-            checkStmt.setInt(1, eleveId);
-            checkStmt.setInt(2, coursId);
-            checkStmt.setInt(3, trimestre);
-            ResultSet rs = checkStmt.executeQuery();
-
+        String select = "SELECT id FROM notes WHERE eleve_id = ? AND cours_id = ? AND trimestre = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(select)) {
+            stmt.setInt(1, eleveId);
+            stmt.setInt(2, coursId);
+            stmt.setInt(3, trimestre);
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                // Mise à jour
-                String update = "UPDATE notes SET note_cc = ?, moyenne = (note_examen + ?) / 2 WHERE id = ?";
-                PreparedStatement updateStmt = conn.prepareStatement(update);
-                updateStmt.setFloat(1, noteCC);
-                updateStmt.setFloat(2, noteCC);
-                updateStmt.setInt(3, rs.getInt("id"));
-                updateStmt.executeUpdate();
+                // La note existe, on fait un UPDATE
+                String update = "UPDATE notes SET note_cc = ? WHERE eleve_id = ? AND cours_id = ? AND trimestre = ?";
+                try (PreparedStatement updateStmt = conn.prepareStatement(update)) {
+                    updateStmt.setFloat(1, noteCC);
+                    updateStmt.setInt(2, eleveId);
+                    updateStmt.setInt(3, coursId);
+                    updateStmt.setInt(4, trimestre);
+                    updateStmt.executeUpdate();
+                }
             } else {
-                // Insertion
+                // La note n'existe pas, on fait un INSERT
                 String insert = "INSERT INTO notes (eleve_id, cours_id, trimestre, note_cc, moyenne) VALUES (?, ?, ?, ?, ?)";
-                PreparedStatement insertStmt = conn.prepareStatement(insert);
-                insertStmt.setInt(1, eleveId);
-                insertStmt.setInt(2, coursId);
-                insertStmt.setInt(3, trimestre);
-                insertStmt.setFloat(4, noteCC);
-                insertStmt.setFloat(5, noteCC); // provisoire
-                insertStmt.executeUpdate();
+                try (PreparedStatement insertStmt = conn.prepareStatement(insert)) {
+                    insertStmt.setInt(1, eleveId);
+                    insertStmt.setInt(2, coursId);
+                    insertStmt.setInt(3, trimestre);
+                    insertStmt.setFloat(4, noteCC);
+                    insertStmt.setFloat(5, noteCC); // moyenne provisoire
+                    insertStmt.executeUpdate();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
         }
     }
 
-    public void saisirNoteExamen(String idAnonymat, int coursId, int trimestre, float noteExamen) {
+    public void saisirNoteExamen(String anonymat, int coursId, int trimestre, float note) {
+        // Si la note existe déjà, fait un UPDATE, sinon fait un INSERT
         String sql = """
-            SELECT id, note_cc FROM notes 
+            SELECT notes.id, notes.note_cc FROM notes 
             JOIN eleves ON notes.eleve_id = eleves.id 
             WHERE eleves.id_anonymat = ? AND notes.cours_id = ? AND notes.trimestre = ?
         """;
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, idAnonymat);
+            stmt.setString(1, anonymat);
             stmt.setInt(2, coursId);
             stmt.setInt(3, trimestre);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 float noteCC = rs.getFloat("note_cc");
                 int noteId = rs.getInt("id");
-                float moyenne = (noteCC + noteExamen) / 2;
+                float moyenne = (noteCC + note) / 2;
 
                 String update = "UPDATE notes SET note_examen = ?, moyenne = ? WHERE id = ?";
                 PreparedStatement updateStmt = conn.prepareStatement(update);
-                updateStmt.setFloat(1, noteExamen);
+                updateStmt.setFloat(1, note);
                 updateStmt.setFloat(2, moyenne);
                 updateStmt.setInt(3, noteId);
                 updateStmt.executeUpdate();
             } else {
-                System.out.println("Note non trouvée (CC absente ?)");
+                // Insertion si la note n'existe pas
+                // Récupérer l'ID de l'élève à partir de l'anonymat
+                String selectEleve = "SELECT id FROM eleves WHERE id_anonymat = ?";
+                PreparedStatement eleveStmt = conn.prepareStatement(selectEleve);
+                eleveStmt.setString(1, anonymat);
+                ResultSet eleveRs = eleveStmt.executeQuery();
+                if (eleveRs.next()) {
+                    int eleveId = eleveRs.getInt("id");
+                    String insert = "INSERT INTO notes (eleve_id, cours_id, trimestre, note_examen, moyenne) VALUES (?, ?, ?, ?, ?)";
+                    PreparedStatement insertStmt = conn.prepareStatement(insert);
+                    insertStmt.setInt(1, eleveId);
+                    insertStmt.setInt(2, coursId);
+                    insertStmt.setInt(3, trimestre);
+                    insertStmt.setFloat(4, note);
+                    insertStmt.setFloat(5, note); // provisoire
+                    insertStmt.executeUpdate();
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
         }
     }
 
@@ -116,6 +139,7 @@ public class EnseignantService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
         }
         return coursList;
     }
@@ -131,6 +155,7 @@ public class EnseignantService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
         }
         return -1;
     }
@@ -152,6 +177,7 @@ public class EnseignantService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
         }
         return list;
     }
@@ -173,6 +199,7 @@ public class EnseignantService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
         }
         return ids;
     }
@@ -182,5 +209,41 @@ public class EnseignantService {
         noteDAO.getNotesParClasseEtCours(model, classeId, coursId, trimestre);
     }
 
+    public Float getNoteCC(int eleveId, int coursId, int trimestre) {
+        // Retourne la note CC si elle existe, sinon null
+        String sql = "SELECT note_cc FROM notes WHERE eleve_id = ? AND cours_id = ? AND trimestre = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, eleveId);
+            stmt.setInt(2, coursId);
+            stmt.setInt(3, trimestre);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getFloat("note_cc");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
+        }
+        return null;
+    }
 
+    public Float getNoteExamen(String anonymat, int coursId, int trimestre) {
+        // Retourne la note d'examen si elle existe, sinon null
+        String sql = "SELECT note_examen FROM notes JOIN eleves ON notes.eleve_id = eleves.id WHERE eleves.id_anonymat = ? AND notes.cours_id = ? AND notes.trimestre = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, anonymat);
+            stmt.setInt(2, coursId);
+            stmt.setInt(3, trimestre);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getFloat("note_examen");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
+        }
+        return null;
+    }
 }
