@@ -1,6 +1,7 @@
 package org.ruxlsr.view.admin;
 
 import org.ruxlsr.model.Cours;
+import org.ruxlsr.model.Enseignant;
 import org.ruxlsr.service.AdminService;
 
 import javax.swing.*;
@@ -18,30 +19,66 @@ public class PanelCours extends JPanel {
         JPanel form = new JPanel();
         JTextField nom = new JTextField(10);
         JTextField coef = new JTextField(5);
-        JTextField idEns = new JTextField(5);
-        JButton ajouter = new JButton("Ajouter"), refresh = new JButton("Rafraîchir");
+        JComboBox<Enseignant> enseignantBox = new JComboBox<>();
+        JButton ajouter = new JButton("Ajouter"), refresh = new JButton("Rafraîchir"), supprimer = new JButton("Supprimer");
 
         form.add(new JLabel("Nom :")); form.add(nom);
         form.add(new JLabel("Coef :")); form.add(coef);
-        form.add(new JLabel("ID Enseignant :")); form.add(idEns);
-        form.add(ajouter); form.add(refresh);
+        form.add(new JLabel("Enseignant :"));
+
+        try {
+            for (Enseignant e : service.listerEnseignants()) {
+                enseignantBox.addItem(e);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        form.add(enseignantBox);
+        form.add(ajouter); form.add(refresh); form.add(supprimer);
         add(form, BorderLayout.NORTH);
 
-        model = new DefaultTableModel(new String[]{"ID", "Nom", "Coef", "Enseignant"}, 0);
+        model = new DefaultTableModel(new String[]{"ID", "Nom", "Coef", "Enseignant"}, 0) {
+            public boolean isCellEditable(int row, int col) {
+                return col == 1 || col == 2 || col == 3;
+            }
+        };
         table = new JTable(model);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         ajouter.addActionListener(e -> {
             try {
-                service.creerCours(nom.getText(), Integer.parseInt(coef.getText()), Integer.parseInt(idEns.getText()));
-                nom.setText(""); coef.setText(""); idEns.setText("");
+                Cours c = new Cours(0, nom.getText(), Integer.parseInt(coef.getText()), ((Enseignant) enseignantBox.getSelectedItem()).getId());
+                service.creerCours(nom.getText(), Integer.parseInt(coef.getText()), ((Enseignant) enseignantBox.getSelectedItem()).getId());
+                nom.setText(""); coef.setText("");
                 chargerTable();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage());
             }
         });
-
         refresh.addActionListener(e -> chargerTable());
+        supprimer.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog("ID du cours à supprimer :");
+            if (input != null) {
+                try {
+                    service.supprimerCoursParId(Integer.parseInt(input));
+                    chargerTable();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, ex.getMessage());
+                }
+            }
+        });
+
+        table.getModel().addTableModelListener(e -> {
+            int row = e.getFirstRow();
+            int id = (int) model.getValueAt(row, 0);
+            String nomCours = (String) model.getValueAt(row, 1);
+            int coefficient = Integer.parseInt(model.getValueAt(row, 2).toString());
+            String enseignantNom = (String) model.getValueAt(row, 3);
+            int enseignantId = service.getIdEnseignantByNom(enseignantNom);
+            service.modifierCours(id, nomCours, coefficient, enseignantId);
+        });
+
         chargerTable();
     }
 
@@ -50,10 +87,12 @@ public class PanelCours extends JPanel {
         try {
             List<Cours> list = service.listerCours();
             for (Cours c : list) {
-                model.addRow(new Object[]{c.getId(), c.getNom(), c.getCoefficient(), c.getEnseignantId()});
+                String enseignantNom = service.getNomEnseignantById(c.getEnseignantId());
+                model.addRow(new Object[]{c.getId(), c.getNom(), c.getCoefficient(), enseignantNom});
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 }
+

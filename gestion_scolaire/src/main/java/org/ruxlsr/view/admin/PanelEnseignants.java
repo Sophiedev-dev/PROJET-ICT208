@@ -17,13 +17,17 @@ public class PanelEnseignants extends JPanel {
         setLayout(new BorderLayout());
         JPanel form = new JPanel();
         JTextField nom = new JTextField(20);
-        JButton ajouter = new JButton("Ajouter"), refresh = new JButton("Rafraîchir");
+        JButton ajouter = new JButton("Ajouter"), refresh = new JButton("Rafraîchir"), supprimer = new JButton("Supprimer");
 
         form.add(new JLabel("Nom :")); form.add(nom);
-        form.add(ajouter); form.add(refresh);
+        form.add(ajouter); form.add(refresh); form.add(supprimer);
         add(form, BorderLayout.NORTH);
 
-        model = new DefaultTableModel(new String[]{"ID", "Nom"}, 0);
+        model = new DefaultTableModel(new String[]{"ID", "Nom"}, 0) {
+            public boolean isCellEditable(int row, int col) {
+                return col == 1;
+            }
+        };
         table = new JTable(model);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
@@ -37,6 +41,27 @@ public class PanelEnseignants extends JPanel {
             }
         });
         refresh.addActionListener(e -> chargerTable());
+
+        supprimer.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog("Entrer l'ID de l'enseignant à supprimer :");
+            if (input != null) {
+                try {
+                    service.supprimerEnseignantParId(Integer.parseInt(input));
+                    chargerTable();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, ex.getMessage());
+                }
+            }
+        });
+
+        table.getModel().addTableModelListener(e -> {
+            if (e.getColumn() == 1) {
+                int row = e.getFirstRow();
+                int id = (int) model.getValueAt(row, 0);
+                String nouveauNom = (String) model.getValueAt(row, 1);
+                service.modifierNomEnseignant(id, nouveauNom);
+            }
+        });
 
         chargerTable();
     }
@@ -53,4 +78,5 @@ public class PanelEnseignants extends JPanel {
         }
     }
 }
+
 

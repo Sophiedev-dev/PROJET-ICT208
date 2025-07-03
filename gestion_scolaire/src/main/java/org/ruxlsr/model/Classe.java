@@ -17,6 +17,6 @@ public class Classe {
 
     @Override
     public String toString() {
-        return "Classe{id=" + id + ", nom='" + nom + "', niveauId=" + niveauId + "}";
+        return nom;
     }
 }
