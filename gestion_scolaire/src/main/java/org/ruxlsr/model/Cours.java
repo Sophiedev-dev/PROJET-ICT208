@@ -13,13 +13,24 @@ public class Cours {
         this.enseignantId = enseignantId;
     }
 
-    public int getId() { return id; }
-    public String getNom() { return nom; }
-    public int getCoefficient() { return coefficient; }
-    public int getEnseignantId() { return enseignantId; }
+    public int getId() {
+        return id;
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public int getCoefficient() {
+        return coefficient;
+    }
+
+    public int getEnseignantId() {
+        return enseignantId;
+    }
 
     @Override
     public String toString() {
-        return "Cours{id=" + id + ", nom='" + nom + "', coef=" + coefficient + ", enseignantId=" + enseignantId + "}";
+        return nom;
     }
 }

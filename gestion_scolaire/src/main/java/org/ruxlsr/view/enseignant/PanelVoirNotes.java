@@ -1,14 +1,10 @@
 package org.ruxlsr.view.enseignant;
 
-import org.ruxlsr.dao.NoteDAO;
 import org.ruxlsr.model.Cours;
 import org.ruxlsr.service.EnseignantService;
-import org.ruxlsr.view.JTextAreaOutputStream;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.io.PrintStream;
 
 public class PanelVoirNotes extends JPanel {
     private JComboBox<Integer> classeCombo;
@@ -23,17 +19,20 @@ public class PanelVoirNotes extends JPanel {
         JPanel top = new JPanel();
 
         classeCombo = new JComboBox<>(service.getClasseIdsByEnseignant(enseignantId).toArray(new Integer[0]));
-        coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
-        trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
+        coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[1]));
+        trimestreCombo = new JComboBox<>(new String[] { "1", "2", "3" });
         JButton afficher = new JButton("Afficher");
 
-        top.add(new JLabel("Classe :")); top.add(classeCombo);
-        top.add(new JLabel("Cours :")); top.add(coursCombo);
-        top.add(new JLabel("Trimestre :")); top.add(trimestreCombo);
+        top.add(new JLabel("Classe :"));
+        top.add(classeCombo);
+        top.add(new JLabel("Cours :"));
+        top.add(coursCombo);
+        top.add(new JLabel("Trimestre :"));
+        top.add(trimestreCombo);
         top.add(afficher);
         add(top, BorderLayout.NORTH);
 
-        model = new DefaultTableModel(new String[]{"Nom", "Note CC", "Note Examen", "Moyenne"}, 0);
+        model = new DefaultTableModel(new String[] { "Nom", "Note CC", "Note Examen", "Moyenne" }, 0);
         table = new JTable(model);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
