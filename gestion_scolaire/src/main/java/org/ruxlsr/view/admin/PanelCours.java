@@ -40,7 +40,7 @@ public class PanelCours extends JPanel {
 
         model = new DefaultTableModel(new String[]{"ID", "Nom", "Coef", "Enseignant"}, 0) {
             public boolean isCellEditable(int row, int col) {
-                return col == 1 || col == 2 || col == 3;
+                return col == 1 || col == 2 ;
             }
         };
         table = new JTable(model);
