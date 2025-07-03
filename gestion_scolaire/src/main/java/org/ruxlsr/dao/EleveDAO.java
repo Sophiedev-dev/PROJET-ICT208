@@ -56,4 +56,14 @@ public class EleveDAO {
         }
         return eleves;
     }
+
+    public void updateAnonymat(int eleveId, String idAnonymat) throws SQLException {
+        String sql = "UPDATE eleves SET id_anonymat = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, idAnonymat);
+            stmt.setInt(2, eleveId);
+            stmt.executeUpdate();
+        }
+    }
 }

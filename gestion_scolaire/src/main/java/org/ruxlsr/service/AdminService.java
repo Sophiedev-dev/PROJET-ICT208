@@ -12,22 +12,13 @@ import java.util.List;
 public class AdminService {
 
     public void creerNiveau(String nom) throws SQLException {
-        String sql = "INSERT INTO niveaux(nom) VALUES (?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nom);
-            stmt.executeUpdate();
-        }
+        final NiveauDAO niveauDAO = new NiveauDAO();
+        niveauDAO.insert(new Niveau(0, nom));
     }
 
     public void creerClasse(String nom, int niveauId) throws SQLException {
-        String sql = "INSERT INTO classes(nom, niveau_id) VALUES (?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nom);
-            stmt.setInt(2, niveauId);
-            stmt.executeUpdate();
-        }
+        final ClasseDAO classeDAO = new ClasseDAO();
+        classeDAO.insert(new Classe(0, nom, niveauId));
     }
 
     public void creerEnseignant(String nom) throws SQLException {
@@ -61,13 +52,8 @@ public class AdminService {
     }
 
     public void genererAnonymat(int eleveId, String idAnonymat) throws SQLException {
-        String sql = "UPDATE eleves SET id_anonymat = ? WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, idAnonymat);
-            stmt.setInt(2, eleveId);
-            stmt.executeUpdate();
-        }
+        final EleveDAO eleveDao = new EleveDAO();
+        eleveDao.updateAnonymat(eleveId, idAnonymat);
     }
 
     public List<Niveau> listerNiveaux() throws SQLException {

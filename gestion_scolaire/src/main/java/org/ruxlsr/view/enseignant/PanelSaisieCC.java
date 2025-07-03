@@ -1,39 +1,70 @@
 package org.ruxlsr.view.enseignant;
 
+import org.ruxlsr.model.Cours;
+import org.ruxlsr.model.Eleve;
 import org.ruxlsr.service.EnseignantService;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
 
 public class PanelSaisieCC extends JPanel {
+    private JComboBox<Cours> coursCombo;
+    private JComboBox<String> trimestreCombo;
+    private JTable table;
+    private DefaultTableModel model;
+    private JButton enregistrerBtn;
+    private final EnseignantService service = new EnseignantService();
+
     public PanelSaisieCC(int enseignantId) {
-        setLayout(new GridLayout(6, 2, 10, 10));
+        setLayout(new BorderLayout());
 
-        JTextField eleveIdField = new JTextField();
-        JTextField coursIdField = new JTextField();
-        JTextField trimestreField = new JTextField();
-        JTextField noteField = new JTextField();
+        JPanel top = new JPanel();
+        coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
+        trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
+        JButton chargerBtn = new JButton("Charger");
+        top.add(new JLabel("Cours :")); top.add(coursCombo);
+        top.add(new JLabel("Trimestre :")); top.add(trimestreCombo);
+        top.add(chargerBtn);
+        add(top, BorderLayout.NORTH);
 
-        JButton valider = new JButton("Enregistrer");
-
-        add(new JLabel("ID Élève :")); add(eleveIdField);
-        add(new JLabel("ID Cours :")); add(coursIdField);
-        add(new JLabel("Trimestre (1-3) :")); add(trimestreField);
-        add(new JLabel("Note CC :")); add(noteField);
-        add(new JLabel()); add(valider);
-
-        valider.addActionListener(e -> {
-            try {
-                int eleveId = Integer.parseInt(eleveIdField.getText());
-                int coursId = Integer.parseInt(coursIdField.getText());
-                int trimestre = Integer.parseInt(trimestreField.getText());
-                float note = Float.parseFloat(noteField.getText());
-
-                new EnseignantService().saisirNoteCC(eleveId, coursId, trimestre, note);
-                JOptionPane.showMessageDialog(this, "Note enregistrée.");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
+        model = new DefaultTableModel(new String[]{"ID", "Nom", "Note CC"}, 0) {
+            public boolean isCellEditable(int row, int column) {
+                return column == 2;
             }
-        });
+        };
+        table = new JTable(model);
+        add(new JScrollPane(table), BorderLayout.CENTER);
+
+        enregistrerBtn = new JButton("Enregistrer Notes");
+        add(enregistrerBtn, BorderLayout.SOUTH);
+
+        chargerBtn.addActionListener(e -> chargerEleves(enseignantId));
+        enregistrerBtn.addActionListener(e -> enregistrerNotes());
+    }
+
+    private void chargerEleves(int enseignantId) {
+        model.setRowCount(0);
+        Cours cours = (Cours) coursCombo.getSelectedItem();
+        int classeId = service.getClasseIdForCours(cours.getId());
+        List<Eleve> eleves = service.getElevesByClasse(classeId);
+        for (Eleve el : eleves) {
+            model.addRow(new Object[]{el.getId(), el.getNom(), ""});
+        }
+    }
+
+    private void enregistrerNotes() {
+        Cours cours = (Cours) coursCombo.getSelectedItem();
+        int trimestre = trimestreCombo.getSelectedIndex() + 1;
+        for (int i = 0; i < model.getRowCount(); i++) {
+            int eleveId = (int) model.getValueAt(i, 0);
+            String val = model.getValueAt(i, 2).toString();
+            if (!val.isEmpty()) {
+                float note = Float.parseFloat(val);
+                service.saisirNoteCC(eleveId, cours.getId(), trimestre, note);
+            }
+        }
+        JOptionPane.showMessageDialog(this, "Notes CC enregistrées.");
     }
 }

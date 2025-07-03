@@ -2,6 +2,7 @@ package org.ruxlsr.view;
 
 import org.ruxlsr.dao.UtilisateurDAO;
 import org.ruxlsr.model.Utilisateur;
+import org.ruxlsr.view.admin.AdminFrame;
 import org.ruxlsr.view.eleve.EleveFrame;
 import org.ruxlsr.view.enseignant.EnseignantFrame;
 
@@ -50,7 +51,7 @@ public class LoginFrame extends JFrame {
                 switch (user.getRole()) {
                     case "ELEVE" -> new EleveFrame(user.getEleveId()).setVisible(true);
                     case "ENSEIGNANT" -> new EnseignantFrame(user.getEnseignantId()).setVisible(true);
-                    case "ADMINISTRATEUR" -> JOptionPane.showMessageDialog(null, "Interface admin non implémentée.");
+                    case "ADMINISTRATEUR" -> new AdminFrame();
                     default -> JOptionPane.showMessageDialog(null, "Rôle inconnu.");
                 }
             }

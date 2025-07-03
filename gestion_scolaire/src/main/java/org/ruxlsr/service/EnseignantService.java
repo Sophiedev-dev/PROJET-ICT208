@@ -1,8 +1,17 @@
 package org.ruxlsr.service;
 
+import org.ruxlsr.dao.CoursClasseDAO;
+import org.ruxlsr.dao.NoteDAO;
+import org.ruxlsr.model.Cours;
+import org.ruxlsr.model.Eleve;
 import org.ruxlsr.utils.DatabaseConnection;
 
+import javax.swing.table.DefaultTableModel;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class EnseignantService {
 
@@ -89,4 +98,89 @@ public class EnseignantService {
             e.printStackTrace();
         }
     }
+
+    public List<Cours> getCoursByEnseignant(int enseignantId) {
+        List<Cours> coursList = new ArrayList<>();
+        String sql = "SELECT * FROM cours WHERE enseignant_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, enseignantId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                coursList.add(new Cours(
+                        rs.getInt("id"),
+                        rs.getString("nom"),
+                        rs.getInt("coefficient"),
+                        rs.getInt("enseignant_id")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return coursList;
+    }
+
+    public int getClasseIdForCours(int coursId) {
+        String sql = "SELECT classe_id FROM cours_classes WHERE cours_id = ? LIMIT 1";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, coursId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("classe_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    public List<Eleve> getElevesByClasse(int classeId) {
+        List<Eleve> list = new ArrayList<>();
+        String sql = "SELECT * FROM eleves WHERE classe_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, classeId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(new Eleve(
+                        rs.getInt("id"),
+                        rs.getString("nom"),
+                        rs.getInt("classe_id"),
+                        rs.getString("id_anonymat")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public Set<Integer> getClasseIdsByEnseignant(int enseignantId) {
+        Set<Integer> ids = new HashSet<>();
+        String sql = """
+            SELECT DISTINCT cc.classe_id
+            FROM cours c
+            JOIN cours_classes cc ON c.id = cc.cours_id
+            WHERE c.enseignant_id = ?
+        """;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, enseignantId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                ids.add(rs.getInt("classe_id"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ids;
+    }
+
+    public void getNoteParclasseEtCours(DefaultTableModel model, int classeId, int coursId, int trimestre){
+        NoteDAO noteDAO = new NoteDAO();
+        noteDAO.getNotesParClasseEtCours(model, classeId, coursId, trimestre);
+    }
+
+
 }

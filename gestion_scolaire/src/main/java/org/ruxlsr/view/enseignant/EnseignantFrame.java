@@ -1,7 +1,6 @@
 package org.ruxlsr.view.enseignant;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class EnseignantFrame extends JFrame {
     private int enseignantId;

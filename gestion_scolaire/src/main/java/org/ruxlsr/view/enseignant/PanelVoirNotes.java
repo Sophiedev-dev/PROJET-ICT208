@@ -1,46 +1,50 @@
 package org.ruxlsr.view.enseignant;
 
 import org.ruxlsr.dao.NoteDAO;
+import org.ruxlsr.model.Cours;
+import org.ruxlsr.service.EnseignantService;
 import org.ruxlsr.view.JTextAreaOutputStream;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.PrintStream;
 
 public class PanelVoirNotes extends JPanel {
+    private JComboBox<Integer> classeCombo;
+    private JComboBox<Cours> coursCombo;
+    private JComboBox<String> trimestreCombo;
+    private JTable table;
+    private DefaultTableModel model;
+    private final EnseignantService service = new EnseignantService();
+
     public PanelVoirNotes(int enseignantId) {
-        setLayout(new GridLayout(6, 2, 10, 10));
+        setLayout(new BorderLayout());
+        JPanel top = new JPanel();
 
-        JTextField classeField = new JTextField();
-        JTextField coursField = new JTextField();
-        JTextField trimestreField = new JTextField();
-
+        classeCombo = new JComboBox<>(service.getClasseIdsByEnseignant(enseignantId).toArray(new Integer[0]));
+        coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
+        trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
         JButton afficher = new JButton("Afficher");
 
-        JTextArea result = new JTextArea();
-        result.setEditable(false);
+        top.add(new JLabel("Classe :")); top.add(classeCombo);
+        top.add(new JLabel("Cours :")); top.add(coursCombo);
+        top.add(new JLabel("Trimestre :")); top.add(trimestreCombo);
+        top.add(afficher);
+        add(top, BorderLayout.NORTH);
 
-        add(new JLabel("ID Classe :")); add(classeField);
-        add(new JLabel("ID Cours :")); add(coursField);
-        add(new JLabel("Trimestre (1-3) :")); add(trimestreField);
-        add(new JLabel()); add(afficher);
-        add(new JLabel("Résultats :")); add(new JScrollPane(result));
+        model = new DefaultTableModel(new String[]{"Nom", "Note CC", "Note Examen", "Moyenne"}, 0);
+        table = new JTable(model);
+        add(new JScrollPane(table), BorderLayout.CENTER);
 
-        afficher.addActionListener(e -> {
-            try {
-                int classeId = Integer.parseInt(classeField.getText());
-                int coursId = Integer.parseInt(coursField.getText());
-                int trimestre = Integer.parseInt(trimestreField.getText());
+        afficher.addActionListener(e -> chargerNotes());
+    }
 
-                result.setText("");
-                PrintStream out = new PrintStream(new JTextAreaOutputStream(result));
-                PrintStream oldOut = System.out;
-                System.setOut(out);
-                new NoteDAO().afficherNotesParClasseEtCours(classeId, coursId, trimestre);
-                System.setOut(oldOut);
-            } catch (Exception ex) {
-                result.setText("Erreur : " + ex.getMessage());
-            }
-        });
+    private void chargerNotes() {
+        model.setRowCount(0);
+        int classeId = (int) classeCombo.getSelectedItem();
+        int coursId = ((Cours) coursCombo.getSelectedItem()).getId();
+        int trimestre = trimestreCombo.getSelectedIndex() + 1;
+        new EnseignantService().getNoteParclasseEtCours(model, classeId, coursId, trimestre);
     }
 }
