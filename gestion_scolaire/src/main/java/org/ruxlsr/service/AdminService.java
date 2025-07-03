@@ -15,6 +15,7 @@ public class AdminService {
     private final NiveauDAO niveauDAO = new NiveauDAO();
     private final ClasseDAO classeDAO = new ClasseDAO();
     private final CoursDAO coursDAO = new CoursDAO();
+    private final CoursClasseDAO coursClasseDAO = new CoursClasseDAO();
     private final EleveDAO eleveDAO = new EleveDAO();
     private final EnseignantDAO enseignantDAO = new EnseignantDAO();
     private final UtilisateurDAO utilisateurDAO = new UtilisateurDAO();
@@ -175,6 +176,18 @@ public class AdminService {
     }
     public List<Eleve> getElevesByClasse(int classeId) throws SQLException {
         return eleveDAO.getByClasse(classeId);
+    }
+    public int creerCoursEtRetournerId(String nom, int coef, int enseignantId) {
+        return coursDAO.insertReturnId(new Cours(0, nom, coef, enseignantId));
+    }
+
+    public void associerCoursAClasse(int coursId, int classeId) throws SQLException {
+        coursClasseDAO.insert(new CoursClasse(0, coursId, classeId));
+    }
+
+    public String getNomClasseByCoursId(int coursId) {
+        int classeId = coursClasseDAO.getClasseIdByCoursId(coursId);
+        return classeDAO.getNomById(classeId);
     }
 
 }

@@ -5,6 +5,7 @@ import org.ruxlsr.utils.DatabaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ClasseDAO {
@@ -72,5 +73,21 @@ public class ClasseDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getNomById(int classeId) {
+        List<Classe> list = new ArrayList<>();
+        String sql = "SELECT * FROM classes WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, classeId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                return rs.getString("nom");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    return null;
     }
 }

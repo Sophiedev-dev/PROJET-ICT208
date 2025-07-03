@@ -84,4 +84,26 @@ public class CoursDAO {
         }
     }
 
+    public int insertReturnId(Cours cours) {
+        String sql = "INSERT INTO cours (nom, coefficient, enseignant_id) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setString(1, cours.getNom());
+            stmt.setInt(2, cours.getCoefficient());
+            stmt.setInt(3, cours.getEnseignantId());
+
+            stmt.executeUpdate();
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // en cas d’échec
+    }
+
+
 }

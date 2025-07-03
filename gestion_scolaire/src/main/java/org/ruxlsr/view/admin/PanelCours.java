@@ -1,6 +1,8 @@
 package org.ruxlsr.view.admin;
 
+import org.ruxlsr.model.Classe;
 import org.ruxlsr.model.Cours;
+import org.ruxlsr.model.CoursClasse;
 import org.ruxlsr.model.Enseignant;
 import org.ruxlsr.service.AdminService;
 
@@ -13,20 +15,22 @@ import java.util.List;
 public class PanelCours extends JPanel {
     private JTable table;
     private DefaultTableModel model;
-    private AdminService service = new AdminService();
+    private final AdminService service = new AdminService();
 
     public PanelCours() {
         setLayout(new BorderLayout());
+
         JPanel form = new JPanel();
         JTextField nom = new JTextField(10);
         JTextField coef = new JTextField(5);
         JComboBox<Enseignant> enseignantBox = new JComboBox<>();
-        JButton ajouter = new JButton("Ajouter"), refresh = new JButton("Rafraîchir"), supprimer = new JButton("Supprimer");
+        JComboBox<Classe> classeBox = new JComboBox<>();
 
-        form.add(new JLabel("Nom :")); form.add(nom);
-        form.add(new JLabel("Coef :")); form.add(coef);
-        form.add(new JLabel("Enseignant :"));
+        JButton ajouter = new JButton("Ajouter");
+        JButton refresh = new JButton("Rafraîchir");
+        JButton supprimer = new JButton("Supprimer");
 
+        // Chargement enseignants
         try {
             for (Enseignant e : service.listerEnseignants()) {
                 enseignantBox.addItem(e);
@@ -35,36 +39,57 @@ public class PanelCours extends JPanel {
             e.printStackTrace();
         }
 
-        form.add(enseignantBox);
+        // Chargement classes
+        try {
+            for (Classe c : service.listerClasses()) {
+                classeBox.addItem(c);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Formulaire
+        form.add(new JLabel("Nom :")); form.add(nom);
+        form.add(new JLabel("Coef :")); form.add(coef);
+        form.add(new JLabel("Enseignant :")); form.add(enseignantBox);
+        form.add(new JLabel("Classe :")); form.add(classeBox);
         form.add(ajouter); form.add(refresh); form.add(supprimer);
+
         add(form, BorderLayout.NORTH);
 
-        model = new DefaultTableModel(new String[]{"ID", "Nom", "Coef", "Enseignant"}, 0) {
+        // Tableau
+        model = new DefaultTableModel(new String[]{"ID", "Nom", "Coef", "Enseignant", "Classe"}, 0) {
             public boolean isCellEditable(int row, int col) {
-                return col == 1 || col == 2 ;
+                return col == 1 || col == 2; // nom et coef modifiables
             }
         };
         table = new JTable(model);
         add(new JScrollPane(table), BorderLayout.CENTER);
 
+        // Bouton ajouter
         ajouter.addActionListener(e -> {
             try {
-                Cours c = new Cours(0, nom.getText(), Integer.parseInt(coef.getText()), ((Enseignant) enseignantBox.getSelectedItem()).getId());
-                service.creerCours(nom.getText(), Integer.parseInt(coef.getText()), ((Enseignant) enseignantBox.getSelectedItem()).getId());
+                String nomCours = nom.getText().trim();
+                int coefficient = Integer.parseInt(coef.getText());
+                int enseignantId = ((Enseignant) enseignantBox.getSelectedItem()).getId();
+                int classeId = ((Classe) classeBox.getSelectedItem()).getId();
+
+                int coursId = service.creerCoursEtRetournerId(nomCours, coefficient, enseignantId);
+                service.associerCoursAClasse(coursId, classeId);
+
                 nom.setText(""); coef.setText("");
-                JOptionPane.showMessageDialog(this, "insertion reussie");
+                JOptionPane.showMessageDialog(this, "Cours ajouté avec succès.");
                 chargerTable();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage());
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
             }
         });
-        refresh.addActionListener(e -> {
-            try {
-                chargerTable();
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+
+        // Bouton refresh
+        refresh.addActionListener(e -> chargerTable());
+
+        // Bouton supprimer
         supprimer.addActionListener(e -> {
             String input = JOptionPane.showInputDialog("ID du cours à supprimer :");
             if (input != null) {
@@ -77,6 +102,7 @@ public class PanelCours extends JPanel {
             }
         });
 
+        // Modifications en ligne (nom + coef)
         table.getModel().addTableModelListener(e -> {
             int row = e.getFirstRow();
             int id = (int) model.getValueAt(row, 0);
@@ -87,22 +113,21 @@ public class PanelCours extends JPanel {
             service.modifierCours(id, nomCours, coefficient, enseignantId);
         });
 
+        chargerTable();
+    }
+
+    private void chargerTable() {
+        model.setRowCount(0);
+        List<Cours> list = null;
         try {
-            chargerTable();
+            list = service.listerCours();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void chargerTable() throws SQLException {
-        model.setRowCount(0);
-
-            List<Cours> list = service.listerCours();
-            for (Cours c : list) {
-                String enseignantNom = service.getNomEnseignantById(c.getEnseignantId());
-                model.addRow(new Object[]{c.getId(), c.getNom(), c.getCoefficient(), enseignantNom});
-            }
-
+        for (Cours c : list) {
+            String enseignantNom = service.getNomEnseignantById(c.getEnseignantId());
+            String classeNom = service.getNomClasseByCoursId(c.getId()); // attention à cette méthode
+            model.addRow(new Object[]{c.getId(), c.getNom(), c.getCoefficient(), enseignantNom, classeNom});
+        }
     }
 }
-
