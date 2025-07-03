@@ -74,7 +74,21 @@ CREATE TABLE notes (
 );
 
 
+-- Supprimez d'abord les contraintes existantes (si nécessaire)
+ALTER TABLE cours_classes DROP FOREIGN KEY cours_classes_ibfk_1;
+ALTER TABLE notes DROP FOREIGN KEY notes_ibfk_2;
 
+-- Modification pour la table cours_classes
+ALTER TABLE cours_classes 
+ADD CONSTRAINT fk_cours_classes_cours
+FOREIGN KEY (cours_id) REFERENCES cours(id)
+ON DELETE CASCADE;
+
+-- Modification pour la table notes
+ALTER TABLE notes
+ADD CONSTRAINT fk_notes_cours
+FOREIGN KEY (cours_id) REFERENCES cours(id)
+ON DELETE CASCADE;
 
 -- Niveaux
 INSERT INTO niveaux (nom) VALUES 

@@ -70,7 +70,17 @@ public class PanelCours extends JPanel {
         ajouter.addActionListener(e -> {
             try {
                 String nomCours = nom.getText().trim();
+                if(nomCours.isBlank() || coef.getText().isBlank()){
+                    JOptionPane.showMessageDialog(this, "entrée incorrecte");
+                    return;
+                }
+
                 int coefficient = Integer.parseInt(coef.getText());
+                if(coefficient <= 0){
+                    JOptionPane.showMessageDialog(this, "entrée du coeficient incorecte");
+                    return;
+                }
+
                 int enseignantId = ((Enseignant) enseignantBox.getSelectedItem()).getId();
                 int classeId = ((Classe) classeBox.getSelectedItem()).getId();
 
@@ -81,8 +91,7 @@ public class PanelCours extends JPanel {
                 JOptionPane.showMessageDialog(this, "Cours ajouté avec succès.");
                 chargerTable();
             } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
+                //JOptionPane.showMessageDialog(this, "Erreur : " + ex.getMessage());
             }
         });
 
@@ -97,7 +106,8 @@ public class PanelCours extends JPanel {
                     service.supprimerCoursParId(Integer.parseInt(input));
                     chargerTable();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage());
+                    //JOptionPane.showMessageDialog(this, ex.getMessage());
+
                 }
             }
         });

@@ -11,8 +11,8 @@ import java.util.List;
 
 public class PanelEleves extends JPanel {
     private JTable table;
-    private DefaultTableModel model;
-    private AdminService service = new AdminService();
+    private final DefaultTableModel model;
+    private final AdminService service = new AdminService();
 
     public PanelEleves() {
         setLayout(new BorderLayout());
@@ -46,6 +46,10 @@ public class PanelEleves extends JPanel {
 
         ajouter.addActionListener(e -> {
             try {
+                if(nom.getText().isBlank()){
+                    JOptionPane.showMessageDialog(this, "entrée incorrecte");
+                    return;
+                }
                 Classe selected = (Classe) classeBox.getSelectedItem();
                 service.creerEleveAvecAnonymat(nom.getText(), selected.getId());
                 nom.setText("");
@@ -60,9 +64,10 @@ public class PanelEleves extends JPanel {
             if (input != null) {
                 try {
                     service.supprimerEleveParId(Integer.parseInt(input));
+                    JOptionPane.showMessageDialog(this, "insertion reussie");
                     chargerTable();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage());
+                    //JOptionPane.showMessageDialog(this, ex.getMessage());
                 }
             }
         });

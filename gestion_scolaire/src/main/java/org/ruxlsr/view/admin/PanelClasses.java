@@ -45,7 +45,12 @@ public class PanelClasses extends JPanel {
 
         ajouter.addActionListener(e -> {
             try {
+                if( nomField.getText().isBlank()){
+                    JOptionPane.showMessageDialog(this, "entrée incorrecte");
+                    return;
+                }
                 Niveau niveau = (Niveau) niveauBox.getSelectedItem();
+                assert niveau != null;
                 service.creerClasse(nomField.getText(), niveau.getId());
                 nomField.setText("");
                 chargerTable();

@@ -10,8 +10,8 @@ import java.util.List;
 
 public class PanelNiveaux extends JPanel {
     private JTable table;
-    private DefaultTableModel model;
-    private AdminService service = new AdminService();
+    private final DefaultTableModel model;
+    private final AdminService service = new AdminService();
 
     public PanelNiveaux() {
         setLayout(new BorderLayout());
@@ -33,11 +33,15 @@ public class PanelNiveaux extends JPanel {
 
         ajouter.addActionListener(e -> {
             try {
+                if( niveauField.getText().isBlank()){
+                    JOptionPane.showMessageDialog(this, "entrée incorrecte");
+                    return;
+                }
                 service.creerNiveau(niveauField.getText());
                 niveauField.setText("");
                 chargerTable();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage());
+                //JOptionPane.showMessageDialog(this, ex.getMessage());
             }
         });
         refresh.addActionListener(e -> chargerTable());
@@ -49,7 +53,7 @@ public class PanelNiveaux extends JPanel {
                     service.supprimerNiveauParIdCascade(Integer.parseInt(input));
                     chargerTable();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, ex.getMessage());
+                    //JOptionPane.showMessageDialog(this, ex.getMessage());
                 }
             }
         });
@@ -74,7 +78,7 @@ public class PanelNiveaux extends JPanel {
                 model.addRow(new Object[]{n.getId(), n.getNom()});
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 }
