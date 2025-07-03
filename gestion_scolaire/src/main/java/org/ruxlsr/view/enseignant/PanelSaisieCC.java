@@ -12,8 +12,8 @@ import java.util.List;
 
 public class PanelSaisieCC extends JPanel {
     private JComboBox<Cours> coursCombo;
+    private JComboBox<Classe> classeCombo;
     private JComboBox<String> trimestreCombo;
-    private JComboBox<Classe> classeCombo; // Utilise Classe, pas Integer
     private JTable table;
     private DefaultTableModel model;
     private JButton enregistrerBtn;
@@ -29,9 +29,12 @@ public class PanelSaisieCC extends JPanel {
         top.add(new JLabel("Classe :")); top.add(classeCombo);
 
         coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
+        coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
         trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
         JButton chargerBtn = new JButton("Charger");
+
         top.add(new JLabel("Cours :")); top.add(coursCombo);
+        top.add(new JLabel("Classe :")); top.add(classeCombo);
         top.add(new JLabel("Trimestre :")); top.add(trimestreCombo);
         top.add(chargerBtn);
         add(top, BorderLayout.NORTH);
@@ -47,17 +50,17 @@ public class PanelSaisieCC extends JPanel {
         enregistrerBtn = new JButton("Enregistrer Notes");
         add(enregistrerBtn, BorderLayout.SOUTH);
 
-        chargerBtn.addActionListener(e -> chargerEleves(enseignantId));
+        chargerBtn.addActionListener(e -> chargerEleves());
         enregistrerBtn.addActionListener(e -> enregistrerNotes());
     }
 
-    private void chargerEleves(int enseignantId) {
+    private void chargerEleves() {
         model.setRowCount(0);
         Cours cours = (Cours) coursCombo.getSelectedItem();
-        int coursId = cours.getId();
         Classe selectedClasse = (Classe) classeCombo.getSelectedItem();
         int classeId = selectedClasse.getId();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
+
         List<Eleve> eleves = service.getElevesByClasse(classeId);
         for (Eleve el : eleves) {
             // Récupérer la note CC existante pour cet élève, ce cours et ce trimestre

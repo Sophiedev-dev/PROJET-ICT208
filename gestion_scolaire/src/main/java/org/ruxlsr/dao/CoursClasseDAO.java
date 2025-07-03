@@ -35,4 +35,18 @@ public class CoursClasseDAO {
         }
         return list;
     }
+
+    public int getClasseIdByCoursId(int coursId) {
+        String sql = "SELECT classe_id FROM cours_classes WHERE cours_id = ? LIMIT 1";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, coursId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt("classe_id");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
 }

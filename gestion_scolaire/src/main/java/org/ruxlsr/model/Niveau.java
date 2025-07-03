@@ -14,6 +14,6 @@ public class Niveau {
 
     @Override
     public String toString() {
-        return "Niveau{id=" + id + ", nom='" + nom + "'}";
+        return nom;
     }
 }

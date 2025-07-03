@@ -12,8 +12,9 @@ import java.util.List;
 
 public class PanelSaisieExamen extends JPanel {
     private JComboBox<Cours> coursCombo;
-    private JComboBox<String> trimestreCombo;
     private JComboBox<Classe> classeCombo;
+    private JComboBox<String> trimestreCombo;
+
     private JTable table;
     private DefaultTableModel model;
     private JButton enregistrerBtn;
@@ -24,13 +25,14 @@ public class PanelSaisieExamen extends JPanel {
 
         JPanel top = new JPanel();
         coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
-        trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
         List<Classe> classes = service.getClassesByEnseignantV2(enseignantId);
         classeCombo = new JComboBox<>(classes.toArray(new Classe[0]));
+        trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
         JButton chargerBtn = new JButton("Charger");
+
         top.add(new JLabel("Cours :")); top.add(coursCombo);
-        top.add(new JLabel("Trimestre :")); top.add(trimestreCombo);
         top.add(new JLabel("Classe :")); top.add(classeCombo);
+        top.add(new JLabel("Trimestre :")); top.add(trimestreCombo);
         top.add(chargerBtn);
         add(top, BorderLayout.NORTH);
 
@@ -54,6 +56,7 @@ public class PanelSaisieExamen extends JPanel {
         Cours cours = (Cours) coursCombo.getSelectedItem();
         Classe classe = (Classe) classeCombo.getSelectedItem();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
+        if (classe == null) return;
         List<Eleve> eleves = service.getElevesByClasse(classe.getId());
         for (Eleve el : eleves) {
             // Récupérer la note d'examen existante pour cet anonymat, ce cours et ce trimestre
@@ -66,25 +69,26 @@ public class PanelSaisieExamen extends JPanel {
     }
 
     private void enregistrerNotes() {
-         // Force la validation de la cellule en cours d'édition
+        // Force la validation de la cellule en cours d'édition
         if (table.isEditing()) {
             table.getCellEditor().stopCellEditing();
         }
         Cours cours = (Cours) coursCombo.getSelectedItem();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
         for (int i = 0; i < model.getRowCount(); i++) {
-            int eleveId = (int) model.getValueAt(i, 0);
-            String val = model.getValueAt(i, 2).toString();
+            String anonymat = model.getValueAt(i, 0).toString();
+            String val = model.getValueAt(i, 1).toString();
             if (!val.isEmpty()) {
                 float note = Float.parseFloat(val);
                 if (note < 0 || note > 20) {
                     JOptionPane.showMessageDialog(this, "La note doit être comprise entre 0 et 20 !");
                     return; // Arrête la saisie si une note est invalide
                 }
-                service.saisirNoteCC(eleveId, cours.getId(), trimestre, note);
+                service.saisirNoteExamen(anonymat, cours.getId(), trimestre, note);
             }
         }
         JOptionPane.showMessageDialog(this, "Notes examen enregistrées.");
     }
 }
+
 
