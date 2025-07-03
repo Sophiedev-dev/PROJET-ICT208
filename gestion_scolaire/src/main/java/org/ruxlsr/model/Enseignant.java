@@ -15,7 +15,7 @@ public class Enseignant {
 
     @Override
     public String toString() {
-        return "Enseignant{id=" + id + ", nom='" + nom + "'}";
+        return  nom ;
     }
 }
 

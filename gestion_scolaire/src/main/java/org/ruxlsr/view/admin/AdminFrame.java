@@ -16,6 +16,7 @@ public class AdminFrame extends JFrame {
         tabs.add("Enseignants", new PanelEnseignants());
         tabs.add("Cours", new PanelCours());
         tabs.add("Élèves", new PanelEleves());
+        tabs.add("Résultats", new PanelResultatsAdmin());
 
         add(tabs);
     }
