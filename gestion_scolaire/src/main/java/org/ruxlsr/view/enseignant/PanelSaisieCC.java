@@ -11,6 +11,7 @@ import java.util.List;
 
 public class PanelSaisieCC extends JPanel {
     private JComboBox<Cours> coursCombo;
+    private JComboBox<Integer> classeCombo;
     private JComboBox<String> trimestreCombo;
     private JTable table;
     private DefaultTableModel model;
@@ -22,9 +23,12 @@ public class PanelSaisieCC extends JPanel {
 
         JPanel top = new JPanel();
         coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
+        classeCombo = new JComboBox<>(service.getClasseIdsByEnseignant(enseignantId).toArray(new Integer[0]));
         trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
         JButton chargerBtn = new JButton("Charger");
+
         top.add(new JLabel("Cours :")); top.add(coursCombo);
+        top.add(new JLabel("Classe :")); top.add(classeCombo);
         top.add(new JLabel("Trimestre :")); top.add(trimestreCombo);
         top.add(chargerBtn);
         add(top, BorderLayout.NORTH);
@@ -40,14 +44,13 @@ public class PanelSaisieCC extends JPanel {
         enregistrerBtn = new JButton("Enregistrer Notes");
         add(enregistrerBtn, BorderLayout.SOUTH);
 
-        chargerBtn.addActionListener(e -> chargerEleves(enseignantId));
+        chargerBtn.addActionListener(e -> chargerEleves());
         enregistrerBtn.addActionListener(e -> enregistrerNotes());
     }
 
-    private void chargerEleves(int enseignantId) {
+    private void chargerEleves() {
         model.setRowCount(0);
-        Cours cours = (Cours) coursCombo.getSelectedItem();
-        int classeId = service.getClasseIdForCours(cours.getId());
+        int classeId = (int) classeCombo.getSelectedItem();
         List<Eleve> eleves = service.getElevesByClasse(classeId);
         for (Eleve el : eleves) {
             model.addRow(new Object[]{el.getId(), el.getNom(), ""});

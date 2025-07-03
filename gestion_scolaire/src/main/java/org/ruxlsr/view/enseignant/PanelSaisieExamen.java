@@ -11,6 +11,7 @@ import java.util.List;
 
 public class PanelSaisieExamen extends JPanel {
     private JComboBox<Cours> coursCombo;
+    private JComboBox<Integer> classeCombo;
     private JComboBox<String> trimestreCombo;
     private JTable table;
     private DefaultTableModel model;
@@ -22,9 +23,12 @@ public class PanelSaisieExamen extends JPanel {
 
         JPanel top = new JPanel();
         coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
+        classeCombo = new JComboBox<>(service.getClasseIdsByEnseignant(enseignantId).toArray(new Integer[0]));
         trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
         JButton chargerBtn = new JButton("Charger");
+
         top.add(new JLabel("Cours :")); top.add(coursCombo);
+        top.add(new JLabel("Classe :")); top.add(classeCombo);
         top.add(new JLabel("Trimestre :")); top.add(trimestreCombo);
         top.add(chargerBtn);
         add(top, BorderLayout.NORTH);
@@ -46,8 +50,7 @@ public class PanelSaisieExamen extends JPanel {
 
     private void chargerEleves() {
         model.setRowCount(0);
-        Cours cours = (Cours) coursCombo.getSelectedItem();
-        int classeId = new EnseignantService().getClasseIdForCours(cours.getId());
+        int classeId = (int) classeCombo.getSelectedItem();
         List<Eleve> eleves = service.getElevesByClasse(classeId);
         for (Eleve el : eleves) {
             model.addRow(new Object[]{el.getIdAnonymat(), ""});
@@ -62,11 +65,11 @@ public class PanelSaisieExamen extends JPanel {
             String val = model.getValueAt(i, 1).toString();
             if (!val.isEmpty()) {
                 float note = Float.parseFloat(val);
-                assert cours != null;
                 service.saisirNoteExamen(anonymat, cours.getId(), trimestre, note);
             }
         }
         JOptionPane.showMessageDialog(this, "Notes examen enregistrées.");
     }
 }
+
 
