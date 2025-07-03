@@ -51,7 +51,7 @@ public class PanelEleves extends JPanel {
                 nom.setText("");
                 chargerTable();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, ex.getStackTrace());
+                JOptionPane.showMessageDialog(this, ex.getMessage());
             }
         });
         refresh.addActionListener(e -> chargerTable());
@@ -62,7 +62,7 @@ public class PanelEleves extends JPanel {
                     service.supprimerEleveParId(Integer.parseInt(input));
                     chargerTable();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, ex.getStackTrace());
+                    JOptionPane.showMessageDialog(this, ex.getMessage());
                 }
             }
         });

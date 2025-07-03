@@ -117,16 +117,19 @@ public class AdminService {
 
 
     public void supprimerEleveParId(int id) {
-        eleveDAO.delete(id); // supprime aussi les notes via ON DELETE CASCADE si configuré
-        utilisateurDAO.deleteByEleveId(id);
+        eleveDAO.delete(id);
     }
 
 
     public void creerEleveAvecAnonymat(String nom, int classeId) {
-        String anonymat = "A" + System.currentTimeMillis(); // identifiant pseudo-aléatoire
+        String anonymat = "A" + System.currentTimeMillis();
         Eleve e = new Eleve(0, nom, classeId, anonymat);
         int id = eleveDAO.insertReturnId(e);
-        utilisateurDAO.insert(new Utilisateur(0, nom.toLowerCase(), "eleve123", "ELEVE", 0, id));
+        if (id > 0) {
+          System.out.println("insertion reussie");
+        } else {
+            throw new RuntimeException("Erreur lors de l'ajout de l'élève. Insertion échouée.");
+        }
     }
 
 
