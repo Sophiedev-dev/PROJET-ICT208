@@ -42,6 +42,7 @@ public class AdminService {
             stmt.setInt(2, coefficient);
             stmt.setInt(3, enseignantId);
             stmt.executeUpdate();
+            System.out.println("insertion reussie");
         }
     }
 
@@ -168,4 +169,12 @@ public class AdminService {
     public void supprimerClasseParId(int i) {
         classeDAO.delete(i);
     }
+
+    public List<Cours> listerCoursParClasse(int classeId) {
+        return coursDAO.getByClasse(classeId);
+    }
+    public List<Eleve> getElevesByClasse(int classeId) throws SQLException {
+        return eleveDAO.getByClasse(classeId);
+    }
+
 }

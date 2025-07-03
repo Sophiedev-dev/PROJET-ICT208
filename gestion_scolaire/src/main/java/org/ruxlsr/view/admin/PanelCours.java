@@ -7,6 +7,7 @@ import org.ruxlsr.service.AdminService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.List;
 
 public class PanelCours extends JPanel {
@@ -51,12 +52,19 @@ public class PanelCours extends JPanel {
                 Cours c = new Cours(0, nom.getText(), Integer.parseInt(coef.getText()), ((Enseignant) enseignantBox.getSelectedItem()).getId());
                 service.creerCours(nom.getText(), Integer.parseInt(coef.getText()), ((Enseignant) enseignantBox.getSelectedItem()).getId());
                 nom.setText(""); coef.setText("");
+                JOptionPane.showMessageDialog(this, "insertion reussie");
                 chargerTable();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage());
             }
         });
-        refresh.addActionListener(e -> chargerTable());
+        refresh.addActionListener(e -> {
+            try {
+                chargerTable();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         supprimer.addActionListener(e -> {
             String input = JOptionPane.showInputDialog("ID du cours à supprimer :");
             if (input != null) {
@@ -79,20 +87,22 @@ public class PanelCours extends JPanel {
             service.modifierCours(id, nomCours, coefficient, enseignantId);
         });
 
-        chargerTable();
+        try {
+            chargerTable();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private void chargerTable() {
+    private void chargerTable() throws SQLException {
         model.setRowCount(0);
-        try {
+
             List<Cours> list = service.listerCours();
             for (Cours c : list) {
                 String enseignantNom = service.getNomEnseignantById(c.getEnseignantId());
                 model.addRow(new Object[]{c.getId(), c.getNom(), c.getCoefficient(), enseignantNom});
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
     }
 }
 
