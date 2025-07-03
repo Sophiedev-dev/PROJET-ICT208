@@ -2,6 +2,7 @@ package org.ruxlsr.view.enseignant;
 
 import org.ruxlsr.model.Cours;
 import org.ruxlsr.model.Eleve;
+import org.ruxlsr.model.Classe;
 import org.ruxlsr.service.EnseignantService;
 
 import javax.swing.*;
@@ -12,6 +13,7 @@ import java.util.List;
 public class PanelSaisieCC extends JPanel {
     private JComboBox<Cours> coursCombo;
     private JComboBox<String> trimestreCombo;
+    private JComboBox<Classe> classeCombo; // Utilise Classe, pas Integer
     private JTable table;
     private DefaultTableModel model;
     private JButton enregistrerBtn;
@@ -21,6 +23,11 @@ public class PanelSaisieCC extends JPanel {
         setLayout(new BorderLayout());
 
         JPanel top = new JPanel();
+        // Récupère la liste des classes de l'enseignant
+        List<Classe> classes = service.getClassesByEnseignantV2(enseignantId);
+        classeCombo = new JComboBox<>(classes.toArray(new Classe[0]));
+        top.add(new JLabel("Classe :")); top.add(classeCombo);
+
         coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
         trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
         JButton chargerBtn = new JButton("Charger");
@@ -47,7 +54,9 @@ public class PanelSaisieCC extends JPanel {
     private void chargerEleves(int enseignantId) {
         model.setRowCount(0);
         Cours cours = (Cours) coursCombo.getSelectedItem();
-        int classeId = service.getClasseIdForCours(cours.getId());
+        int coursId = cours.getId();
+        Classe selectedClasse = (Classe) classeCombo.getSelectedItem();
+        int classeId = selectedClasse.getId();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
         List<Eleve> eleves = service.getElevesByClasse(classeId);
         for (Eleve el : eleves) {
@@ -73,6 +82,10 @@ public class PanelSaisieCC extends JPanel {
             String val = model.getValueAt(i, 2).toString();
             if (!val.isEmpty()) {
                 float note = Float.parseFloat(val);
+                if (note < 0 || note > 20) {
+                    JOptionPane.showMessageDialog(this, "La note doit être comprise entre 0 et 20 !");
+                    return; // Arrête la saisie si une note est invalide
+                }
                 service.saisirNoteCC(eleveId, cours.getId(), trimestre, note);
             }
         }

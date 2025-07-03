@@ -1,13 +1,14 @@
 package org.ruxlsr.view.enseignant;
 
 import org.ruxlsr.model.Cours;
+import org.ruxlsr.model.Classe;
 import org.ruxlsr.service.EnseignantService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 public class PanelVoirNotes extends JPanel {
-    private JComboBox<Integer> classeCombo;
+    private JComboBox<Classe> classeCombo;
     private JComboBox<Cours> coursCombo;
     private JComboBox<String> trimestreCombo;
     private JTable table;
@@ -18,7 +19,10 @@ public class PanelVoirNotes extends JPanel {
         setLayout(new BorderLayout());
         JPanel top = new JPanel();
 
-        classeCombo = new JComboBox<>(service.getClasseIdsByEnseignant(enseignantId).toArray(new Integer[0]));
+        // Récupère la liste des classes (par nom)
+        java.util.List<Classe> classes = service.getClassesByEnseignantV2(enseignantId);
+        classeCombo = new JComboBox<>(classes.toArray(new Classe[0]));
+
         coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
         trimestreCombo = new JComboBox<>(new String[] { "1", "2", "3" });
         JButton afficher = new JButton("Afficher");
@@ -41,10 +45,12 @@ public class PanelVoirNotes extends JPanel {
 
     private void chargerNotes() {
         model.setRowCount(0);
-        int classeId = (int) classeCombo.getSelectedItem();
+        Classe selectedClasse = (Classe) classeCombo.getSelectedItem();
+        if (selectedClasse == null) return;
+        int classeId = selectedClasse.getId();
         int coursId = ((Cours) coursCombo.getSelectedItem()).getId();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
-        new EnseignantService().getNoteParclasseEtCours(model, classeId, coursId, trimestre);
+        service.getNoteParclasseEtCours(model, classeId, coursId, trimestre);
 
     }
 }

@@ -4,6 +4,7 @@ import org.ruxlsr.dao.CoursClasseDAO;
 import org.ruxlsr.dao.NoteDAO;
 import org.ruxlsr.model.Cours;
 import org.ruxlsr.model.Eleve;
+import org.ruxlsr.model.Classe;
 import org.ruxlsr.utils.DatabaseConnection;
 
 import javax.swing.table.DefaultTableModel;
@@ -253,5 +254,54 @@ public class EnseignantService {
             JOptionPane.showMessageDialog(null, "Erreur SQL : " + e.getMessage());
         }
         return null;
+    }
+
+    public List<Classe> getClassesByEnseignant(int enseignantId) {
+        List<Classe> classes = new ArrayList<>();
+        String sql = "SELECT c.id, c.nom, c.niveau_id " +
+                     "FROM classes c " +
+                     "JOIN cours_classe cc ON cc.classe_id = c.id " +
+                     "JOIN cours co ON co.id = cc.cours_id " +
+                     "WHERE co.enseignant_id = ? " +
+                     "GROUP BY c.id, c.nom, c.niveau_id";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, enseignantId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String nom = rs.getString("nom");
+                int niveauId = rs.getInt("niveau_id");
+                classes.add(new Classe(id, nom, niveauId));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return classes;
+    }
+
+    public List<Classe> getClassesByEnseignantV2(int enseignantId) {
+        List<Classe> classes = new ArrayList<>();
+        String sql = """
+            SELECT DISTINCT classes.id, classes.nom, classes.niveau_id
+            FROM cours
+            JOIN cours_classes ON cours.id = cours_classes.cours_id
+            JOIN classes ON cours_classes.classe_id = classes.id
+            WHERE cours.enseignant_id = ?
+        """;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, enseignantId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String nom = rs.getString("nom");
+                int niveauId = rs.getInt("niveau_id");
+                classes.add(new Classe(id, nom, niveauId));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return classes;
     }
 }

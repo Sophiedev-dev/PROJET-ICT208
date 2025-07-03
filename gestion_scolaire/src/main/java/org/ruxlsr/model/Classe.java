@@ -15,8 +15,11 @@ public class Classe {
     public String getNom() { return nom; }
     public int getNiveauId() { return niveauId; }
 
+    public void setId(int id) { this.id = id; }
+    public void setNom(String nom) { this.nom = nom; }
+
     @Override
     public String toString() {
-        return "Classe{id=" + id + ", nom='" + nom + "', niveauId=" + niveauId + "}";
+        return nom; // Affiche seulement le nom dans la combo
     }
 }
