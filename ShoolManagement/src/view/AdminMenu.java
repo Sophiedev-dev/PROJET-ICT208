@@ -22,7 +22,8 @@ public class AdminMenu {
             System.out.println("5. Inscrire un élève");
             System.out.println("0. Quitter");
             System.out.print("Choix : ");
-            choix = scanner.nextInt(); scanner.nextLine();
+            choix = scanner.nextInt();
+            scanner.nextLine();
 
             try {
                 switch (choix) {
@@ -35,7 +36,8 @@ public class AdminMenu {
                         for (int i = 0; i < niveaux.size(); i++)
                             System.out.println((i + 1) + ". " + niveaux.get(i).getNom());
                         System.out.print("Choisir niveau : ");
-                        Niveau niveau = niveaux.get(scanner.nextInt() - 1); scanner.nextLine();
+                        Niveau niveau = niveaux.get(scanner.nextInt() - 1);
+                        scanner.nextLine();
                         System.out.print("Nom de la classe : ");
                         controller.creerClasse(scanner.nextLine(), niveau);
                     }
@@ -44,23 +46,40 @@ public class AdminMenu {
                         controller.creerEnseignant(scanner.nextLine());
                     }
                     case 4 -> {
+                        // Afficher les enseignants
                         List<Enseignant> enseignants = controller.getTousLesEnseignants();
                         for (int i = 0; i < enseignants.size(); i++)
                             System.out.println((i + 1) + ". " + enseignants.get(i).getNom());
                         System.out.print("Choisir enseignant : ");
-                        Enseignant e = enseignants.get(scanner.nextInt() - 1); scanner.nextLine();
+                        Enseignant e = enseignants.get(scanner.nextInt() - 1);
+                        scanner.nextLine();
+
+                        // Afficher les classes disponibles
+                        List<Classe> classes = controller.getToutesLesClasses();
+                        for (int i = 0; i < classes.size(); i++)
+                            System.out.println((i + 1) + ". " + classes.get(i).getNom());
+                        System.out.print("Choisir classe : ");
+                        Classe c = classes.get(scanner.nextInt() - 1);
+                        scanner.nextLine();
+
+                        // Demander les autres infos du cours
                         System.out.print("Nom du cours : ");
                         String nom = scanner.nextLine();
                         System.out.print("Coefficient : ");
-                        int coef = scanner.nextInt(); scanner.nextLine();
-                        controller.creerCours(nom, coef, e);
+                        int coef = scanner.nextInt();
+                        scanner.nextLine();
+
+                        // Créer le cours avec enseignant et classe
+                        controller.creerCours(nom, coef, e, c);
                     }
+
                     case 5 -> {
                         List<Classe> classes = controller.getToutesLesClasses();
                         for (int i = 0; i < classes.size(); i++)
                             System.out.println((i + 1) + ". " + classes.get(i));
                         System.out.print("Choisir classe : ");
-                        Classe c = classes.get(scanner.nextInt() - 1); scanner.nextLine();
+                        Classe c = classes.get(scanner.nextInt() - 1);
+                        scanner.nextLine();
                         System.out.print("Nom élève : ");
                         String nom = scanner.nextLine();
                         System.out.print("Anonymat : ");

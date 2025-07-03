@@ -36,4 +36,15 @@ public class EnseignantDAO {
             stmt.executeUpdate();
         }
     }
+
+    public Enseignant findDernierCree() throws SQLException {
+    String sql = "SELECT * FROM enseignants ORDER BY id DESC LIMIT 1";
+    Statement stmt = ConnexionDB.getConnexion().createStatement();
+    ResultSet rs = stmt.executeQuery(sql);
+    if (rs.next()) {
+        return new Enseignant(rs.getInt("id"), rs.getString("nom"));
+    }
+    return null;
+}
+
 }

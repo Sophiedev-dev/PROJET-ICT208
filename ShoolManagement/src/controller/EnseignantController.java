@@ -4,7 +4,10 @@ import dao.*;
 import model.*;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EnseignantController {
 
@@ -43,4 +46,59 @@ public class EnseignantController {
             noteDAO.update(note);
         }
     }
+
+    public void genererBulletin(int classeId, Trimestre trimestre) throws SQLException {
+    List<Eleve> eleves = eleveDAO.findByClasse(classeId);
+    List<Cours> coursList = coursDAO.findByClasse(classeId);
+
+    Map<Eleve, Double> moyennesMap = new HashMap<>();
+
+    for (Eleve eleve : eleves) {
+        double totalNotes = 0;
+        int totalCoef = 0;
+
+        for (Cours cours : coursList) {
+            Note note = noteDAO.findNote(eleve.getId(), cours.getId(), trimestre);
+            if (note != null) {
+                double moyenneCours = (note.getNoteCC() + note.getNoteExamen()) / 2;
+                totalNotes += moyenneCours * cours.getCoefficient();
+                totalCoef += cours.getCoefficient();
+            }
+        }
+
+        double moyenne = totalCoef > 0 ? totalNotes / totalCoef : 0.0;
+        moyennesMap.put(eleve, moyenne);
+    }
+
+    // Tri par moyenne pour déterminer le rang
+    List<Map.Entry<Eleve, Double>> entries = new ArrayList<>(moyennesMap.entrySet());
+    entries.sort((a, b) -> Double.compare(b.getValue(), a.getValue())); // décroissant
+
+    // Insertions dans la table bulletin
+    for (int i = 0; i < entries.size(); i++) {
+        Eleve eleve = entries.get(i).getKey();
+        double moyenne = entries.get(i).getValue();
+        int rang = i + 1;
+        String mention = calculerMention(moyenne);
+
+        new BulletinDAO().insertOrUpdate(new Bulletin(0, eleve, eleve.getClasse(), trimestre, moyenne, rang, mention));
+    }
+
+    System.out.println("✅ Bulletins générés pour la classe ID " + classeId + ", trimestre " + trimestre.name());
+}
+
+private String calculerMention(double moyenne) {
+    if (moyenne >= 16) return "Très Bien";
+    if (moyenne >= 14) return "Bien";
+    if (moyenne >= 12) return "Assez Bien";
+    if (moyenne >= 10) return "Passable";
+    return "Insuffisant";
+}
+
+
+
+    public Note getNote(Eleve eleve, Cours cours, Trimestre trimestre) throws SQLException {
+    return noteDAO.findNote(eleve.getId(), cours.getId(), trimestre);
+}
+
 }

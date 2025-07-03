@@ -44,13 +44,16 @@ CREATE TABLE IF NOT EXISTS `classes` (
 
 DROP TABLE IF EXISTS `cours`;
 CREATE TABLE IF NOT EXISTS `cours` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `nom` varchar(100) NOT NULL,
-  `coefficient` int NOT NULL,
-  `enseignant_id` int DEFAULT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nom` VARCHAR(100) NOT NULL,
+  `coefficient` INT NOT NULL,
+  `enseignant_id` INT DEFAULT NULL,
+  `classe_id` INT NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `enseignant_id` (`enseignant_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `enseignant_id` (`enseignant_id`),
+  KEY `classe_id` (`classe_id`),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 -- --------------------------------------------------------
 
