@@ -1,13 +1,11 @@
 package org.ruxlsr.service;
 
-import org.ruxlsr.dao.CoursClasseDAO;
-import org.ruxlsr.dao.CoursDAO;
-import org.ruxlsr.dao.EleveDAO;
-import org.ruxlsr.dao.NoteDAO;
+import org.ruxlsr.dao.*;
 import org.ruxlsr.model.Cours;
 import org.ruxlsr.model.Eleve;
-
+import org.ruxlsr.model.Classe;
 import javax.swing.table.DefaultTableModel;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
@@ -17,6 +15,7 @@ public class EnseignantService {
     private final CoursDAO coursDAO = new CoursDAO();
     private final CoursClasseDAO coursClasseDAO = new CoursClasseDAO();
     private final EleveDAO eleveDAO = new EleveDAO();
+    private final ClasseDAO classeDao = new ClasseDAO();
 
     public void afficherCoursEtClasses(int enseignantId) {
         coursClasseDAO.afficherCoursEtClassesPourEnseignant(enseignantId);
@@ -38,7 +37,7 @@ public class EnseignantService {
         return coursClasseDAO.getClasseIdByCoursId(coursId);
     }
 
-    public List<Eleve> getElevesByClasse(int classeId) {
+    public List<Eleve> getElevesByClasse(int classeId) throws SQLException {
         return eleveDAO.getByClasse(classeId);
     }
 
@@ -60,5 +59,9 @@ public class EnseignantService {
 
     public void getCoursClasseNomsById(int enseignantId, DefaultTableModel model) {
         coursClasseDAO.remplirCoursEtClassesPourEnseignant(enseignantId, model);
+    }
+
+    public List<Classe> getClassesByEnseignantV2(int enseignantId) {
+        return classeDao.getClassesByEnseignant(enseignantId);
     }
 }
