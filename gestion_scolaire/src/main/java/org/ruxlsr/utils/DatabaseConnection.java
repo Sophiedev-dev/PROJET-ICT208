@@ -5,9 +5,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static final String URL = "jdbc:mysql://localhost:3306/gestion_scolaire?allowPublicKeyRetrieval=true&useSSL=false";
+    private static final String URL = "jdbc:mysql://localhost:3306/TP?allowPublicKeyRetrieval=true&useSSL=false";
     private static final String USER = "root"; // change selon ton utilisateur MySQL
-    private static final String PASSWORD = "root"; // change selon ton mot de passe
+    private static final String PASSWORD = ""; // change selon ton mot de passe
 
     private static Connection connection;
 
