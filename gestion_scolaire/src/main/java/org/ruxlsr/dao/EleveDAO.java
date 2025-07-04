@@ -3,6 +3,7 @@ package org.ruxlsr.dao;
 import org.ruxlsr.model.Eleve;
 import org.ruxlsr.utils.DatabaseConnection;
 
+import javax.swing.table.DefaultTableModel;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -115,4 +116,75 @@ public class EleveDAO {
         }
     }
 
+    public String getNomById(int eleveId) {
+        String sql = "SELECT nom FROM eleves WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, eleveId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getString("nom");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "Élève inconnu";
+    }
+
+    public float remplirBulletin(int eleveId, int trimestre, DefaultTableModel model) {
+        float totalCoef = 0;
+        float totalPonderee = 0;
+        String sql = """
+            SELECT c.nom AS cours, c.coefficient, n.note_cc, n.note_examen, n.moyenne
+            FROM notes n
+            JOIN cours c ON c.id = n.cours_id
+            WHERE n.eleve_id = ? AND n.trimestre = ?
+        """;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, eleveId);
+            stmt.setInt(2, trimestre);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String cours = rs.getString("cours");
+                int coef = rs.getInt("coefficient");
+                float cc = rs.getFloat("note_cc");
+                float exam = rs.getFloat("note_examen");
+                float moy = rs.getFloat("moyenne");
+
+                model.addRow(new Object[]{cours, coef, cc, exam, moy});
+                totalCoef += coef;
+                totalPonderee += moy * coef;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return totalCoef > 0 ? totalPonderee / totalCoef : 0;
+    }
+
+    public String getRang(int eleveId, int trimestre) {
+        String sql = """
+            SELECT e.id, SUM(n.moyenne * c.coefficient) / SUM(c.coefficient) AS moy
+            FROM notes n
+            JOIN eleves e ON e.id = n.eleve_id
+            JOIN cours c ON c.id = n.cours_id
+            WHERE n.trimestre = ? AND e.classe_id = (
+                SELECT classe_id FROM eleves WHERE id = ?
+            )
+            GROUP BY e.id
+            ORDER BY moy DESC
+        """;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, trimestre);
+            stmt.setInt(2, eleveId);
+            ResultSet rs = stmt.executeQuery();
+            int rang = 1;
+            while (rs.next()) {
+                if (rs.getInt("id") == eleveId) return String.valueOf(rang);
+                rang++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "-";
+    }
 }

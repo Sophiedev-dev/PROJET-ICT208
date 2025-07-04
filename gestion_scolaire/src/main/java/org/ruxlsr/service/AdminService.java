@@ -124,6 +124,7 @@ public class AdminService {
 
 
     public void creerEleveAvecAnonymat(String nom, int classeId) {
+        //generer l'anonymat
         String anonymat = "A" + System.currentTimeMillis();
         Eleve e = new Eleve(0, nom, classeId, anonymat);
         int id = eleveDAO.insertReturnId(e);

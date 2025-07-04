@@ -1,14 +1,10 @@
 package org.ruxlsr.view.enseignant;
 
 import org.ruxlsr.service.EnseignantService;
-import org.ruxlsr.utils.DatabaseConnection;
-import org.ruxlsr.view.JTextAreaOutputStream;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.io.PrintStream;
-import java.sql.*;
 
 public class PanelCoursClasses extends JPanel {
     private final EnseignantService service = new EnseignantService();
@@ -30,23 +26,8 @@ public class PanelCoursClasses extends JPanel {
 
     private void chargerDonnees(int enseignantId) {
         model.setRowCount(0);
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String sql = """
-                SELECT cours.id, cours.nom AS cours_nom, classes.nom AS classe_nom
-                FROM cours
-                JOIN cours_classes ON cours.id = cours_classes.cours_id
-                JOIN classes ON cours_classes.classe_id = classes.id
-                WHERE cours.enseignant_id = ?
-            """;
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, enseignantId);
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    model.addRow(new Object[]{rs.getInt("id"), rs.getString("cours_nom"), rs.getString("classe_nom")});
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        service.getCoursClasseNomsById(enseignantId, model);
     }
+
+
 }

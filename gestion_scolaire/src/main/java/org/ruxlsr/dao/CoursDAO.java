@@ -105,5 +105,21 @@ public class CoursDAO {
         return -1; // en cas d’échec
     }
 
+    public List<Cours> getByEnseignant(int enseignantId) {
+        List<Cours> list = new ArrayList<>();
+        String sql = "SELECT * FROM cours WHERE enseignant_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, enseignantId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(new Cours(rs.getInt("id"), rs.getString("nom"),
+                        rs.getInt("coefficient"), rs.getInt("enseignant_id")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
 }
