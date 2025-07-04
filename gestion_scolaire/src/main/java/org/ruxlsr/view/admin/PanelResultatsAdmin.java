@@ -1,7 +1,5 @@
 package org.ruxlsr.view.admin;
 
-
-
 import org.ruxlsr.model.*;
 import org.ruxlsr.service.*;
 
@@ -15,10 +13,9 @@ import java.util.List;
 public class PanelResultatsAdmin extends JPanel {
     private final JComboBox<Classe> classeCombo = new JComboBox<>();
     private final JComboBox<Cours> coursCombo = new JComboBox<>();
-    private final JComboBox<String> trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
+    private final JComboBox<String> trimestreCombo = new JComboBox<>(new String[] { "1", "2", "3" });
     private final DefaultTableModel model = new DefaultTableModel(
-            new String[]{"#", "Nom", "Anonymat", "Note CC", "Note Examen", "Moyenne", "Mention", "Rang"}, 0
-    ) {
+            new String[] { "#", "Nom", "Anonymat", "Note CC", "Note Examen", "Moyenne", "Mention", "Rang" }, 0) {
         public boolean isCellEditable(int row, int column) {
             return false;
         }
@@ -40,34 +37,52 @@ public class PanelResultatsAdmin extends JPanel {
         top.add(new JLabel("Trimestre :"));
         top.add(trimestreCombo);
         JButton afficher = new JButton("Afficher");
+        JButton refresh = new JButton("Rafraîchir");
         top.add(afficher);
+        top.add(refresh);
         add(top, BorderLayout.NORTH);
 
         add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Charger classes
+        // Chargement initial des listes déroulantes
+        rafraichirListesDeroulantes();
+
+        // Charger cours quand une classe est sélectionnée
+        classeCombo.addActionListener(e -> {
+            rafraichirCours();
+        });
+
+        // Afficher les résultats
+        afficher.addActionListener(e -> chargerResultats());
+
+        // Rafraîchir les listes déroulantes et vider le tableau
+        refresh.addActionListener(e -> {
+            rafraichirListesDeroulantes();
+            model.setRowCount(0);
+        });
+    }
+
+    private void rafraichirListesDeroulantes() {
+        classeCombo.removeAllItems();
         try {
             for (Classe c : adminService.listerClasses()) {
                 classeCombo.addItem(c);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+        rafraichirCours();
+    }
 
-        // Charger cours quand une classe est sélectionnée
-        classeCombo.addActionListener(e -> {
-            coursCombo.removeAllItems();
-            Classe selectedClasse = (Classe) classeCombo.getSelectedItem();
-            if (selectedClasse != null) {
-                List<Cours> coursList = adminService.listerCoursParClasse(selectedClasse.getId());
-                for (Cours c : coursList) {
-                    coursCombo.addItem(c);
-                }
+    private void rafraichirCours() {
+        coursCombo.removeAllItems();
+        Classe selectedClasse = (Classe) classeCombo.getSelectedItem();
+        if (selectedClasse != null) {
+            List<Cours> coursList = adminService.listerCoursParClasse(selectedClasse.getId());
+            for (Cours c : coursList) {
+                coursCombo.addItem(c);
             }
-        });
-
-        // Afficher les résultats
-        afficher.addActionListener(e -> chargerResultats());
+        }
     }
 
     private void chargerResultats() {
@@ -76,7 +91,8 @@ public class PanelResultatsAdmin extends JPanel {
         Cours cours = (Cours) coursCombo.getSelectedItem();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
 
-        if (classe == null || cours == null) return;
+        if (classe == null || cours == null)
+            return;
 
         List<Eleve> eleves = null;
         try {
@@ -116,11 +132,14 @@ public class PanelResultatsAdmin extends JPanel {
     }
 
     private String getMention(float moyenne) {
-        if (moyenne >= 16) return "Très Bien";
-        if (moyenne >= 14) return "Bien";
-        if (moyenne >= 12) return "Assez Bien";
-        if (moyenne >= 10) return "Passable";
+        if (moyenne >= 16)
+            return "Très Bien";
+        if (moyenne >= 14)
+            return "Bien";
+        if (moyenne >= 12)
+            return "Assez Bien";
+        if (moyenne >= 10)
+            return "Passable";
         return "Insuffisant";
     }
 }
-
