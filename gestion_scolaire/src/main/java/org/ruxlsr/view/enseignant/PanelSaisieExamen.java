@@ -7,6 +7,8 @@ import org.ruxlsr.service.EnseignantService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
@@ -28,21 +30,58 @@ public class PanelSaisieExamen extends JPanel {
         coursCombo = new JComboBox<>(service.getCoursByEnseignant(enseignantId).toArray(new Cours[0]));
         List<Classe> classes = service.getClassesByEnseignantV2(enseignantId);
         classeCombo = new JComboBox<>(classes.toArray(new Classe[0]));
-        trimestreCombo = new JComboBox<>(new String[]{"1", "2", "3"});
+        trimestreCombo = new JComboBox<>(new String[] { "1", "2", "3" });
         JButton chargerBtn = new JButton("Charger");
 
-        top.add(new JLabel("Cours :")); top.add(coursCombo);
-        top.add(new JLabel("Classe :")); top.add(classeCombo);
-        top.add(new JLabel("Trimestre :")); top.add(trimestreCombo);
+        top.add(new JLabel("Cours :"));
+        top.add(coursCombo);
+        top.add(new JLabel("Classe :"));
+        top.add(classeCombo);
+        top.add(new JLabel("Trimestre :"));
+        top.add(trimestreCombo);
         top.add(chargerBtn);
         add(top, BorderLayout.NORTH);
 
-        model = new DefaultTableModel(new String[]{"Anonymat", "Note Examen"}, 0) {
+        model = new DefaultTableModel(new String[] { "Anonymat", "Note Examen" }, 0) {
             public boolean isCellEditable(int row, int column) {
                 return column == 1;
             }
         };
-        table = new JTable(model);
+        table = new JTable(model) {
+            @Override
+            public TableCellEditor getCellEditor(int row, int column) {
+                if (column == 1) { // colonne "Note Examen"
+                    JTextField field = new JTextField();
+                    ((javax.swing.text.AbstractDocument) field.getDocument())
+                            .setDocumentFilter(new javax.swing.text.DocumentFilter() {
+                                @Override
+                                public void insertString(FilterBypass fb, int offset, String string,
+                                        javax.swing.text.AttributeSet attr)
+                                        throws javax.swing.text.BadLocationException {
+                                    String text = fb.getDocument().getText(0, fb.getDocument().getLength());
+                                    text = text.substring(0, offset) + string + text.substring(offset);
+                                    if (text.matches("^\\d{0,2}(\\.\\d{0,2})?$")) { // max 2 chiffres avant/après la
+                                                                                    // virgule
+                                        super.insertString(fb, offset, string, attr);
+                                    }
+                                }
+
+                                @Override
+                                public void replace(FilterBypass fb, int offset, int length, String string,
+                                        javax.swing.text.AttributeSet attr)
+                                        throws javax.swing.text.BadLocationException {
+                                    String text = fb.getDocument().getText(0, fb.getDocument().getLength());
+                                    text = text.substring(0, offset) + string + text.substring(offset + length);
+                                    if (text.matches("^\\d{0,2}(\\.\\d{0,2})?$")) {
+                                        super.replace(fb, offset, length, string, attr);
+                                    }
+                                }
+                            });
+                    return new DefaultCellEditor(field);
+                }
+                return super.getCellEditor(row, column);
+            }
+        };
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         enregistrerBtn = new JButton("Enregistrer Notes");
@@ -57,7 +96,8 @@ public class PanelSaisieExamen extends JPanel {
         Cours cours = (Cours) coursCombo.getSelectedItem();
         Classe classe = (Classe) classeCombo.getSelectedItem();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
-        if (classe == null) return;
+        if (classe == null)
+            return;
         List<Eleve> eleves = null;
         try {
             eleves = service.getElevesByClasse(classe.getId());
@@ -65,11 +105,14 @@ public class PanelSaisieExamen extends JPanel {
             throw new RuntimeException(e);
         }
         for (Eleve el : eleves) {
-            // Récupérer la note d'examen existante pour cet anonymat, ce cours et ce trimestre
-            Float noteExamen = service.getNoteExamen(el.getIdAnonymat(), cours.getId(), trimestre); // À implémenter dans EnseignantService
-            model.addRow(new Object[]{
-                el.getIdAnonymat(),
-                noteExamen != null ? noteExamen : ""
+            // Récupérer la note d'examen existante pour cet anonymat, ce cours et ce
+            // trimestre
+            Float noteExamen = service.getNoteExamen(el.getIdAnonymat(), cours.getId(), trimestre); // À implémenter
+                                                                                                    // dans
+                                                                                                    // EnseignantService
+            model.addRow(new Object[] {
+                    el.getIdAnonymat(),
+                    noteExamen != null ? noteExamen : ""
             });
         }
     }
@@ -96,5 +139,3 @@ public class PanelSaisieExamen extends JPanel {
         JOptionPane.showMessageDialog(this, "Notes examen enregistrées.");
     }
 }
-
-
