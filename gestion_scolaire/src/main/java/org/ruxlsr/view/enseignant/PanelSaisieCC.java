@@ -8,6 +8,7 @@ import org.ruxlsr.service.EnseignantService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.List;
 
 public class PanelSaisieCC extends JPanel {
@@ -61,7 +62,12 @@ public class PanelSaisieCC extends JPanel {
         int classeId = selectedClasse.getId();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
 
-        List<Eleve> eleves = service.getElevesByClasse(classeId);
+        List<Eleve> eleves = null;
+        try {
+            eleves = service.getElevesByClasse(classeId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         for (Eleve el : eleves) {
             // Récupérer la note CC existante pour cet élève, ce cours et ce trimestre
             Float noteCC = service.getNoteCC(el.getId(), cours.getId(), trimestre); // À implémenter dans EnseignantService

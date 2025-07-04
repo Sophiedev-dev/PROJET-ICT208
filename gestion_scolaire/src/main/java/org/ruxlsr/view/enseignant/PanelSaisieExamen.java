@@ -8,6 +8,7 @@ import org.ruxlsr.service.EnseignantService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.List;
 
 public class PanelSaisieExamen extends JPanel {
@@ -57,7 +58,12 @@ public class PanelSaisieExamen extends JPanel {
         Classe classe = (Classe) classeCombo.getSelectedItem();
         int trimestre = trimestreCombo.getSelectedIndex() + 1;
         if (classe == null) return;
-        List<Eleve> eleves = service.getElevesByClasse(classe.getId());
+        List<Eleve> eleves = null;
+        try {
+            eleves = service.getElevesByClasse(classe.getId());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         for (Eleve el : eleves) {
             // Récupérer la note d'examen existante pour cet anonymat, ce cours et ce trimestre
             Float noteExamen = service.getNoteExamen(el.getIdAnonymat(), cours.getId(), trimestre); // À implémenter dans EnseignantService

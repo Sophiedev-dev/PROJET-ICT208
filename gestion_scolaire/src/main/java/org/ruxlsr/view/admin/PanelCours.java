@@ -140,4 +140,6 @@ public class PanelCours extends JPanel {
             model.addRow(new Object[]{c.getId(), c.getNom(), c.getCoefficient(), enseignantNom, classeNom});
         }
     }
+
+    
 }

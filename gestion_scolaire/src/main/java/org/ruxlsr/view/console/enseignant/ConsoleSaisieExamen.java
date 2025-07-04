@@ -4,6 +4,7 @@ import org.ruxlsr.model.Cours;
 import org.ruxlsr.model.Eleve;
 import org.ruxlsr.service.EnseignantService;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -36,7 +37,12 @@ public class ConsoleSaisieExamen {
         System.out.print("Trimestre (1-3) : ");
         int trimestre = Integer.parseInt(scanner.nextLine());
 
-        List<Eleve> eleves = service.getElevesByClasse(classeId);
+        List<Eleve> eleves = null;
+        try {
+            eleves = service.getElevesByClasse(classeId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         for (Eleve el : eleves) {
             System.out.printf("Note examen (anonymat %s) : ", el.getIdAnonymat());
             String input = scanner.nextLine();
